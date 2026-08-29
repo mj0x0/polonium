@@ -112,6 +112,10 @@ export class ShortcutsHandler {
         this.shortcuts
             .cycleEngine()
             .activated.connect(this.cycleEngine.bind(this));
+
+        this.shortcuts
+            .rotateLayout()
+            .activated.connect(this.rotateLayout.bind(this));
     }
 
     toggleActiveTiling() {
@@ -317,6 +321,30 @@ export class ShortcutsHandler {
                 this.workspace.currentActivity,
                 this.workspace.activeScreen,
             ),
+        });
+    }
+
+    rotateLayout() {
+        const display = new Display(
+            this.workspace.currentDesktop,
+            this.workspace.currentActivity,
+            this.workspace.activeScreen,
+        );
+        const engineSettings = ctrl().getEngineSettings(display);
+        if (
+            engineSettings === undefined ||
+            !("rotateLayout" in engineSettings)
+        ) {
+            return;
+        }
+        const newSettings = Object.assign({}, engineSettings, {
+            rotateLayout: !(engineSettings as { rotateLayout: boolean })
+                .rotateLayout,
+        });
+        ctrl().queueEvent({
+            t: "changeEngine",
+            display: display,
+            engineSettings: newSettings,
         });
     }
 

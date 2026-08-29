@@ -231,19 +231,17 @@ Item {
         text: "Polonium: Cycle Engine";
         sequence: "Meta+|";
     }
-    /*
-        function getRotateLayout() {
-        return rotateLayout;
+    function rotateLayout() {
+        return rotateLayoutObj;
     }
-        ShortcutHandler {
-        id: rotateLayout;
+    ShortcutHandler {
+        id: rotateLayoutObj;
 
         name: "PoloniumRotateLayout";
         text: "Polonium: Rotate Layout";
         sequence: "";
     }
-    
-
+    /*
     function getSwitchThreeColumn() {
         return switchThreeColumn;
     }

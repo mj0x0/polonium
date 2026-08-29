@@ -642,6 +642,10 @@ class Controller {
         return this.drivers.get(display.toSymbol())?.getEngineType();
     }
 
+    getEngineSettings(display: Display): object | undefined {
+        return this.drivers.get(display.toSymbol())?.getEngineSettings();
+    }
+
     isWindowTiled(window: Window, display?: Display): boolean | undefined {
         if (display != undefined) {
             return this.getDriver(display)?.isWindowTiled(window);
