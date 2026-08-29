@@ -74,6 +74,7 @@ export class WorkspaceHandler {
     }
 
     windowActivated(window: Window | null) {
+        ctrl().mouseFollowsFocus()?.windowActivated(window);
         // eventually we should move border setting entirely into the controller/driver
         this.previousActivated = this.currentActivated;
         this.currentActivated = window;

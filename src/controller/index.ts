@@ -15,6 +15,7 @@ import {
     ShortcutsHandler,
     SettingsHandler,
     DBusHandler,
+    MouseFollowsFocusHandler,
 } from "./handlers";
 import { Direction, directionFromPoint, Queue } from "../util";
 import { Console } from "./console";
@@ -40,6 +41,7 @@ class Controller {
     private shortcutsHandler: ShortcutsHandler;
     private settingsHandler: SettingsHandler;
     private dbusHandler: DBusHandler | null = null;
+    private mffHandler: MouseFollowsFocusHandler | null = null;
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
@@ -56,6 +58,13 @@ class Controller {
             this.dbusHandler = new DBusHandler(this.qmlObjects.dbus);
         }
         this.settingsHandler = new SettingsHandler(this.qmlObjects.settings);
+        if (config().mouseFollowsFocus) {
+            this.mffHandler = new MouseFollowsFocusHandler(
+                this.workspace,
+                this.qmlObjects.mffTimer,
+                this.qmlObjects.dbus,
+            );
+        }
         this.workspaceHandler = new WorkspaceHandler(this.workspace);
         this.shortcutsHandler = new ShortcutsHandler(
             this.workspace,
@@ -637,6 +646,10 @@ class Controller {
             this.workspace.windows.includes(window)
         );
     }
+    mouseFollowsFocus(): MouseFollowsFocusHandler | null {
+        return this.mffHandler;
+    }
+
     // avoid making driver instance public and get current tiling layout to enable cycling
     getEngineType(display: Display): TilingEngineType | undefined {
         return this.drivers.get(display.toSymbol())?.getEngineType();
