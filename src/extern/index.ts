@@ -14,6 +14,7 @@ export interface QmlApi {
 export interface QmlObjects {
     root: QObject;
     eventTimer: QTimer;
+    mffTimer: QTimer;
     shortcuts: Shortcuts;
     settings: Settings;
     dbus: DBus;
@@ -77,4 +78,5 @@ export interface DBus extends QObject {
     getSettings(): DBusCall;
     setSettings(): DBusCall;
     resetSettings(): DBusCall;
+    moveMouseToFocus(): DBusCall;
 }
