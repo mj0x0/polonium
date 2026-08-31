@@ -126,6 +126,9 @@ class Controller {
                 continue;
             }
         }
+        if (rebuildDisplays.size > 0) {
+            this.mffHandler?.retiled();
+        }
         const postQueue = simplifyPostEvents(this.postEventQueue);
         this.postEventQueue = new Queue<PostEvent>();
         console().debug("Handling", postQueue.size, "post event(s)");
