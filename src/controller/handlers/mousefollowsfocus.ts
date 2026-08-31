@@ -8,14 +8,14 @@ export class MouseFollowsFocusHandler {
     private workspace: Workspace;
     private timer: QTimer;
     private dbus: DBus;
-    private target: Window | null = null;
+    private watched: Window | null = null;
     private geometryChanged: () => void;
 
     constructor(workspace: Workspace, timer: QTimer, dbus: DBus) {
         this.workspace = workspace;
         this.timer = timer;
         this.dbus = dbus;
-        this.geometryChanged = this.restartTimer.bind(this);
+        this.geometryChanged = this.followGeometry.bind(this);
         this.timer.interval = config().mouseFollowsFocusDelay;
         this.timer.repeat = false;
         this.timer.triggered.connect(this.warp.bind(this));
@@ -25,25 +25,33 @@ export class MouseFollowsFocusHandler {
         if (window === null || window.specialWindow || window.popupWindow) {
             return;
         }
+        if (this.watched !== window) {
+            if (this.watched !== null) {
+                this.watched.frameGeometryChanged.disconnect(
+                    this.geometryChanged,
+                );
+            }
+            this.watched = window;
+            window.frameGeometryChanged.connect(this.geometryChanged);
+        }
         // cursor already inside means a click or focus-follows-mouse put it
         // there; cancel any pending warp rather than leave it armed
         if (this.cursorInside(window)) {
-            this.clearTarget();
+            this.timer.stop();
             return;
-        }
-        if (this.target !== window) {
-            this.clearTarget();
-            this.target = window;
-            window.frameGeometryChanged.connect(this.geometryChanged);
         }
         this.timer.restart();
     }
 
-    private restartTimer() {
-        // geometry changes only delay a warp while the target stays focused;
-        // they never justify one on their own
-        if (this.target !== this.workspace.activeWindow) {
-            this.clearTarget();
+    // the focused window moved out from under the cursor (a swap, a retile);
+    // follow it once its geometry settles
+    private followGeometry() {
+        const watched = this.watched;
+        if (watched === null || watched !== this.workspace.activeWindow) {
+            this.timer.stop();
+            return;
+        }
+        if (watched.move || watched.resize) {
             return;
         }
         this.timer.restart();
@@ -60,16 +68,7 @@ export class MouseFollowsFocusHandler {
         );
     }
 
-    private clearTarget() {
-        if (this.target !== null) {
-            this.target.frameGeometryChanged.disconnect(this.geometryChanged);
-            this.target = null;
-        }
-        this.timer.stop();
-    }
-
     private warp() {
-        this.clearTarget();
         // warp to wherever focus actually is once geometry has settled,
         // never to a remembered window
         const target = this.workspace.activeWindow;
