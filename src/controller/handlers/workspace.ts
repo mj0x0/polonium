@@ -57,6 +57,7 @@ export class WorkspaceHandler {
     }
 
     windowRemoved(window: Window) {
+        ctrl().mouseFollowsFocus()?.windowRemoved(window);
         ctrl().queueEvent({
             t: "deleteWindow",
             window: window,
