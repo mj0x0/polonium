@@ -2,7 +2,7 @@ import { Window } from "kwin-api";
 import { QTimer } from "kwin-api/qt";
 import { Workspace } from "kwin-api/qml";
 import { DBus } from "../../extern";
-import { config, controller as ctrl } from "..";
+import { config } from "..";
 
 export class MouseFollowsFocusHandler {
     private workspace: Workspace;
@@ -25,9 +25,10 @@ export class MouseFollowsFocusHandler {
         if (window === null || window.specialWindow || window.popupWindow) {
             return;
         }
-        // cursor already inside means a click or focus-follows-mouse reacting
-        // to moving tiles; neither should retarget the warp
+        // cursor already inside means a click or focus-follows-mouse put it
+        // there; cancel any pending warp rather than leave it armed
         if (this.cursorInside(window)) {
+            this.clearTarget();
             return;
         }
         if (this.target !== window) {
@@ -39,6 +40,12 @@ export class MouseFollowsFocusHandler {
     }
 
     private restartTimer() {
+        // geometry changes only delay a warp while the target stays focused;
+        // they never justify one on their own
+        if (this.target !== this.workspace.activeWindow) {
+            this.clearTarget();
+            return;
+        }
         this.timer.restart();
     }
 
@@ -62,24 +69,15 @@ export class MouseFollowsFocusHandler {
     }
 
     private warp() {
-        const target = this.target;
         this.clearTarget();
-        if (
-            target === null ||
-            !ctrl().windowExists(target) ||
-            target.minimized ||
-            (!target.onAllDesktops &&
-                !target.desktops.includes(this.workspace.currentDesktop))
-        ) {
+        // warp to wherever focus actually is once geometry has settled,
+        // never to a remembered window
+        const target = this.workspace.activeWindow;
+        if (target === null || target.specialWindow || target.popupWindow) {
             return;
         }
         if (this.cursorInside(target)) {
             return;
-        }
-        // undo any focus theft from windows sliding under the stationary
-        // cursor, so MoveMouseToFocus resolves the intended window
-        if (this.workspace.activeWindow !== target) {
-            this.workspace.activeWindow = target;
         }
         this.dbus.moveMouseToFocus().call();
     }
