@@ -33,7 +33,7 @@ Item {
     }
     DBusCall {
         id: resetSettingsObj;
-
+        
         service: "xyz.vaughanm.polonium";
         path: "/saver";
         dbusInterface: "xyz.vaughanm.polonium";
