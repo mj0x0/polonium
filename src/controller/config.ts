@@ -52,6 +52,7 @@ export class Config {
     readonly borders: Borders;
     readonly tiledWindowsBelow: boolean;
     readonly mouseFollowsFocus: boolean;
+    readonly mouseFollowsFocusDelay: number;
     readonly windowDragPolicy: DragPolicy;
     readonly dragRetilePoint: DragRetilePoint;
 
@@ -145,6 +146,7 @@ export class Config {
         this.borders = rc("Borders", Borders.All);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.mouseFollowsFocus = rc("MouseFollowsFocus", false);
+        this.mouseFollowsFocusDelay = rc("MouseFollowsFocusDelay", 50);
         this.tilePopups = rc("TilePopups", false);
         this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
         this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);

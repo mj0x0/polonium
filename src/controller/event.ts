@@ -167,14 +167,8 @@ interface ToggleSettingsMenuEvent {
     t: "toggleSettingsMenu";
     display: Display;
 }
-interface MouseWarpEvent {
-    t: "mouseWarp";
-}
 
-export type PostEvent =
-    | SetWindowPropertiesEvent
-    | ToggleSettingsMenuEvent
-    | MouseWarpEvent;
+export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
 
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;
