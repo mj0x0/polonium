@@ -151,6 +151,7 @@ export class BTreeEngine implements TilingEngineInterface {
             if (node.window !== null) {
                 node.split(swapInsertSide ? 1 : 0);
                 node.children![swapInsertSide ? 0 : 1].window = window;
+                sizeSplit(node, swapInsertSide ? 0 : 1);
                 return;
             } else {
                 if (node.children !== null) {
@@ -200,6 +201,7 @@ export class BTreeEngine implements TilingEngineInterface {
         }
         node.split(insertPoint === 0 ? 1 : 0);
         node.children![insertPoint].window = window;
+        sizeSplit(node, insertPoint);
     }
 
     windowActivated(window: Window): boolean {
@@ -235,4 +237,57 @@ export class BTreeEngine implements TilingEngineInterface {
             node.size = tile.size;
         }
     }
+}
+
+const minSplitShare = 0.1;
+
+function preferredExtent(
+    window: Window | null,
+    direction: LayoutDirection,
+): number | null {
+    const size = window?.preferredSize;
+    if (size == null) {
+        return null;
+    }
+    return direction === LayoutDirection.Horizontal ? size.width : size.height;
+}
+
+// splits halve by default; a moved window with a remembered size keeps it
+function sizeSplit(node: Node, newIndex: number): void {
+    if (node.children === null) {
+        return;
+    }
+    const direction = node.layoutDirection;
+    const region = nodeRegion(node);
+    const extent =
+        direction === LayoutDirection.Horizontal ? region.width : region.height;
+    const newChild = node.children[newIndex];
+    const oldChild = node.children[newIndex === 0 ? 1 : 0];
+    const preferred = preferredExtent(newChild.window, direction);
+    if (preferred === null) {
+        return;
+    }
+    const share = Math.min(
+        Math.max(preferred / extent, minSplitShare),
+        1 - minSplitShare,
+    );
+    newChild.size = share * 2;
+    oldChild.size = (1 - share) * 2;
+}
+
+function nodeRegion(node: Node): { width: number; height: number } {
+    let width = 1;
+    let height = 1;
+    let child = node;
+    while (child.parent !== null && child.parent.children !== null) {
+        const [first, second] = child.parent.children;
+        const fraction = child.size / (first.size + second.size);
+        if (child.parent.layoutDirection === LayoutDirection.Horizontal) {
+            width *= fraction;
+        } else {
+            height *= fraction;
+        }
+        child = child.parent;
+    }
+    return { width, height };
 }

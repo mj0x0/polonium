@@ -55,6 +55,8 @@ export class Window {
     id: QUuid;
     name: string;
     minSize: QSize;
+    // output-relative tile size from the last user resize
+    preferredSize: { width: number; height: number } | null = null;
     constructor(id: QUuid, name: string, minSize: QSize) {
         this.id = id;
         this.name = name;

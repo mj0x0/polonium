@@ -85,7 +85,7 @@ PlasmaCore.Dialog {
             text: "Engine:";
         }
         PC3.ComboBox {
-            model: ["Binary Tree", "Half", "Three Column", "Pillars", "Pager", "KWin"];
+            model: ["Binary Tree", "Half", "Three Column", "Pillars", "Pager"];
             currentIndex: root.engineType;
             popup.y: height;
             onActivated: (idx) => {

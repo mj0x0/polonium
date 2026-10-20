@@ -27,6 +27,16 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 - Set layouts independently of desktop and screen
 - DBus integration to save layouts and configurations after logging out
 
+## fork changes
+
+This fork ([mj0x0/polonium](https://github.com/mj0x0/polonium)) adds, on top of upstream:
+
+- **Mouse follows focus** — the cursor warps to the newly focused window once the tiles settle (`MouseFollowsFocus`, off by default; delay and effect-ignore knobs in the config)
+- **Fullscreen keeps your layout** — fullscreen windows keep their slot in the tree and return to it, instead of restructuring the whole layout on every round trip
+- **Size memory** — windows you resize keep their size through retiles instead of snapping back to half-splits
+- **Rotate Layout** — a `Polonium: Rotate Layout` shortcut (unbound by default)
+- **Configurable tile gap** (`TileGap`) and default floating window size
+
 ## x11
 
 X11 is not supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.

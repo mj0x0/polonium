@@ -262,6 +262,7 @@ export class ShortcutsHandler {
     resizeInDirection(edge: Edge) {
         const currentTile = this.workspace.activeWindow?.tile;
         if (currentTile == null) return;
+        const sizes = ctrl().snapshotTileSizes(currentTile);
         let amount = config().tileResizeAmount;
         switch (edge) {
             case Edge.TopEdge: {
@@ -311,6 +312,7 @@ export class ShortcutsHandler {
             default:
                 break;
         }
+        ctrl().rememberResizedWindows(sizes);
     }
 
     toggleSettingsMenu() {
@@ -361,7 +363,11 @@ export class ShortcutsHandler {
             // that we assume that it can and we handle the error without assumption.
             return;
         }
-        const next = (current + 1) % TilingEngineType._Loop;
+        let next = (current + 1) % TilingEngineType._Loop;
+        // the kwin engine only adopts hand-drawn tiles, so it is not worth cycling to
+        if (next === TilingEngineType.KWin) {
+            next = (next + 1) % TilingEngineType._Loop;
+        }
         this.setEngineType(next);
     }
 }

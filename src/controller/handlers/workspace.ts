@@ -24,6 +24,12 @@ export class WorkspaceHandler {
         this.workspace.currentActivityChanged.connect(
             this.rebuildDesktops.bind(this),
         );
+        this.workspace.currentActivityChanged.connect(() =>
+            ctrl().mouseFollowsFocus()?.displayChanged(),
+        );
+        this.workspace.currentDesktopChanged.connect(() =>
+            ctrl().mouseFollowsFocus()?.displayChanged(),
+        );
 
         this.workspace.screensChanged.connect(this.updateDrivers.bind(this));
         this.workspace.desktopsChanged.connect(this.updateDrivers.bind(this));

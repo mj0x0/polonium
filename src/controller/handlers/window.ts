@@ -1,7 +1,8 @@
 import { Window, MaximizeMode, Tile } from "kwin-api";
-import { config, console, controller as ctrl, qt } from "..";
+import { config, console, controller as ctrl, qt, TileSizes } from "..";
 import { Workspace } from "kwin-api/qml";
 import { DragPolicy, DragRetilePoint } from "../config";
+import { Display } from "../event";
 import { QPoint } from "kwin-api/qt";
 import { directionFromPoint } from "../../util";
 
@@ -17,6 +18,8 @@ export class WindowHandler {
     wantsTiled: boolean;
     maximized: boolean;
     wasTiledBeforeMove: boolean = false;
+    resizeSnapshot: TileSizes | null = null;
+    tiledPoint: [number, number] | null = null;
 
     workspace: Workspace;
 
@@ -73,7 +76,39 @@ export class WindowHandler {
         return true;
     }
 
+    // remember the tile slot being vacated so fullscreen/minimize/maximize
+    // round trips reinsert where the window was, not wherever the engine likes
+    private untileRemembering() {
+        const tile = this.window.tile;
+        // the slot, not the frame - the frame may already be fullscreen-sized
+        const geo =
+            tile !== null ? tile.absoluteGeometry : this.window.frameGeometry;
+        this.tiledPoint = [geo.x + geo.width / 2, geo.y + geo.height / 2];
+        ctrl().queueEvent({
+            t: "untileWindow",
+            window: this.window,
+        });
+    }
+
+    private retileRemembered() {
+        const point = this.tiledPoint;
+        this.tiledPoint = null;
+        if (point !== null) {
+            ctrl().queueEvent({
+                t: "placeWindowPoint",
+                window: this.window,
+                point: qt().point(point[0], point[1]),
+            });
+            return;
+        }
+        ctrl().queueEvent({
+            t: "tileWindow",
+            window: this.window,
+        });
+    }
+
     updateWindow() {
+        ctrl().mouseFollowsFocus()?.displayChanged();
         console().debug(
             "updating displays for window",
             this.window.resourceClass,
@@ -89,22 +124,24 @@ export class WindowHandler {
             "fullscreen changed on window",
             this.window.resourceClass,
         );
-        if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
-            ctrl().queueEvent({
-                t: "untileWindow",
-                window: this.window,
-            });
-        } else if (
-            this.canBeTiled() &&
-            !ctrl().isWindowTiled(this.window) &&
-            this.wantsTiled
-        ) {
-            ctrl().queueEvent({
-                t: "tileWindow",
-                window: this.window,
-            });
+        // fullscreen windows stay in the layout; removing one restructures
+        // the tree (sibling hoist flips split orientations), so the round
+        // trip could never restore the original position
+        if (!this.window.fullScreen) {
+            if (ctrl().isWindowTiled(this.window)) {
+                for (const display of Display.generateWindow(this.window)) {
+                    ctrl().queueEvent({
+                        t: "updateTiles",
+                        display: display,
+                        rebuild: true,
+                    });
+                }
+            } else if (this.canBeTiled() && this.wantsTiled) {
+                this.retileRemembered();
+            }
         }
         if (this.window.fullScreen) {
+            this.window.keepBelow = false;
             // toggle fullscreen because this works for whatever reason
             ctrl().queuePostEvent({
                 t: "setWindowProperties",
@@ -133,19 +170,13 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
-            ctrl().queueEvent({
-                t: "untileWindow",
-                window: this.window,
-            });
+            this.untileRemembering();
         } else if (
             this.canBeTiled() &&
             !ctrl().isWindowTiled(this.window) &&
             this.wantsTiled
         ) {
-            ctrl().queueEvent({
-                t: "tileWindow",
-                window: this.window,
-            });
+            this.retileRemembered();
         }
     }
     maximizedChanged(state: MaximizeMode) {
@@ -155,19 +186,13 @@ export class WindowHandler {
         );
         this.maximized = state !== MaximizeMode.MaximizeRestore;
         if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
-            ctrl().queueEvent({
-                t: "untileWindow",
-                window: this.window,
-            });
+            this.untileRemembering();
         } else if (
             this.canBeTiled() &&
             !ctrl().isWindowTiled(this.window) &&
             this.wantsTiled
         ) {
-            ctrl().queueEvent({
-                t: "tileWindow",
-                window: this.window,
-            });
+            this.retileRemembered();
         }
     }
 
@@ -177,6 +202,11 @@ export class WindowHandler {
     // after all that, if
     interactiveMoveResizeStarted() {
         this.wasTiledBeforeMove = ctrl().isWindowTiled(this.window) ?? false;
+        const tile = this.window.tile;
+        this.resizeSnapshot =
+            this.window.resize && tile !== null
+                ? ctrl().snapshotTileSizes(tile)
+                : null;
     }
     interactiveMoveResizeStepped() {
         if (
@@ -203,6 +233,10 @@ export class WindowHandler {
         });
     }
     interactiveMoveResizeFinished() {
+        if (this.resizeSnapshot !== null) {
+            ctrl().rememberResizedWindows(this.resizeSnapshot);
+            this.resizeSnapshot = null;
+        }
         if (
             !this.wantsTiled ||
             !this.canBeTiled() ||

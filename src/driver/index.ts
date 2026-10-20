@@ -156,6 +156,13 @@ export class Driver {
                 if (this.untiledWindows.has(kwinWindow)) {
                     this.untiledWindows.delete(kwinWindow);
                 }
+                // fullscreen windows keep their slot in the tree but are left
+                // alone until they exit; managing them here would fight kwin
+                if (kwinWindow.fullScreen) {
+                    kwinWindow.keepBelow = false;
+                    tiledWindows.add(kwinWindow);
+                    continue;
+                }
                 setTiledProps(kwinWindow);
                 if (kwinWindow.tile !== kwinTile) kwinTile.manage(kwinWindow);
                 //setWindowSize(kwinWindow, kwinTile);
@@ -307,6 +314,23 @@ export class Driver {
         }
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
+    }
+
+    rememberWindowSize(kwinWindow: KwinWindow): void {
+        const tile = kwinWindow.tile;
+        const engineWindow = this.windowMap.get(kwinWindow);
+        if (
+            tile == null ||
+            engineWindow === undefined ||
+            !this.tileMap.has(tile)
+        ) {
+            return;
+        }
+        const geometry = tile.relativeGeometry;
+        engineWindow.preferredSize = {
+            width: geometry.width,
+            height: geometry.height,
+        };
     }
 
     // as of right now, can only update sizes (ie cannot add/remove tiles)

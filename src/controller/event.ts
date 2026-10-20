@@ -167,8 +167,16 @@ interface ToggleSettingsMenuEvent {
     t: "toggleSettingsMenu";
     display: Display;
 }
+// runs after the rebuild so it lands after kwin releases the window from its tile
+interface FloatWindowEvent {
+    t: "floatWindow";
+    window: Window;
+}
 
-export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
+export type PostEvent =
+    | SetWindowPropertiesEvent
+    | ToggleSettingsMenuEvent
+    | FloatWindowEvent;
 
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;

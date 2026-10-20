@@ -2,7 +2,11 @@
 import { Tile as KwinTile, LayoutDirection } from "kwin-api";
 import { Tile as EngineTile } from "../engine";
 import { Queue } from "../util";
-import { console, qt } from "../controller";
+import { config, console, qt } from "../controller";
+import { QSize } from "kwin-api/qt";
+
+// kwin defaults to 0.15 of the output, which floats windows once layouts nest deep
+const minTileSize = 0.001;
 
 export function buildLayout(
     kwinRootTile: KwinTile,
@@ -19,6 +23,10 @@ export function buildLayout(
             continue;
         }
         tileMap.set(kwinTile, engineTile);
+        setTileMinimumSize(kwinTile);
+        if (kwinTile.padding !== config().tileGap) {
+            kwinTile.padding = config().tileGap;
+        }
 
         // changing layout direction with preexisting children causes tiling to freak
         // so we js remove the children beforehand
@@ -90,9 +98,15 @@ function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
     }
 }
 
+function setTileMinimumSize(kwinTile: KwinTile): void {
+    (kwinTile as KwinTile & { minimumSize: QSize }).minimumSize = qt().size(
+        minTileSize,
+        minTileSize,
+    );
+}
+
 function setChildMinSize(kwinTile: KwinTile, index: number) {
-    // set higher than 0.15 to avoid floating point issues
-    const minSize = 0.15001;
+    const minSize = 0.01;
 
     console().debug("setMinChildSize on idx", index);
     const kwinChild = kwinTile.tiles[index];

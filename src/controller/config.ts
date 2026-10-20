@@ -37,6 +37,9 @@ export enum UltrawidePosition {
 export class Config {
     readonly rebuildDelay: number;
     readonly tileResizeAmount: number;
+    readonly tileGap: number;
+    readonly floatingWindowWidth: number;
+    readonly floatingWindowHeight: number;
     readonly useDBusSaver: boolean;
 
     readonly logLevel: LogLevel;
@@ -53,6 +56,7 @@ export class Config {
     readonly tiledWindowsBelow: boolean;
     readonly mouseFollowsFocus: boolean;
     readonly mouseFollowsFocusDelay: number;
+    readonly mouseFollowsFocusIgnoreEffects: string[];
     readonly windowDragPolicy: DragPolicy;
     readonly dragRetilePoint: DragRetilePoint;
 
@@ -73,6 +77,9 @@ export class Config {
 
         this.rebuildDelay = rc("RebuildDelay", 10);
         this.tileResizeAmount = rc("TileResizeAmount", 10);
+        this.tileGap = rc("TileGap", 4);
+        this.floatingWindowWidth = rc("FloatingWindowWidth", 1089);
+        this.floatingWindowHeight = rc("FloatingWindowHeight", 467);
         this.useDBusSaver = rc("UseDBusSaver", false);
 
         this.logLevel = rc("LogLevel", LogLevel.Warn);
@@ -147,6 +154,10 @@ export class Config {
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.mouseFollowsFocus = rc("MouseFollowsFocus", false);
         this.mouseFollowsFocusDelay = rc("MouseFollowsFocusDelay", 50);
+        this.mouseFollowsFocusIgnoreEffects = rc("MouseFollowsFocusIgnoreEffects", "betteroverview")
+            .split(",")
+            .map((x: string) => x.trim())
+            .filter(Boolean);
         this.tilePopups = rc("TilePopups", false);
         this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
         this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);

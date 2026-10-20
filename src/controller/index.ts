@@ -1,4 +1,4 @@
-import { Window, Tile } from "kwin-api";
+import { Window, Tile, ClientAreaOption } from "kwin-api";
 import {
     Event,
     PostEvent,
@@ -101,6 +101,9 @@ class Controller {
             for (const display of displays) {
                 rebuildDisplays.set(display.toSymbol(), display);
             }
+        }
+        if (rebuildDisplays.size > 0) {
+            this.mffHandler?.beforeRebuild();
         }
         for (const [_, display] of rebuildDisplays) {
             if (display.desktop == undefined || display.output == undefined) {
@@ -313,6 +316,7 @@ class Controller {
             ret.push(display);
             driver.untileWindow(window);
         }
+        this.queuePostEvent({ t: "floatWindow", window: window });
         return ret;
     }
     private evPlaceWindow(
@@ -555,6 +559,12 @@ class Controller {
                 }
                 return;
             }
+            case "floatWindow": {
+                if (this.windowExists(ev.window)) {
+                    this.sizeFloatingWindow(ev.window);
+                }
+                return;
+            }
             case "toggleSettingsMenu": {
                 console().log("toggling settings menu");
                 if (this.settingsHandler.isVisible()) {
@@ -649,6 +659,76 @@ class Controller {
             this.workspace.windows.includes(window)
         );
     }
+    // centred in the work area; skipped for drags and maximize/fullscreen/minimize untiles
+    private sizeFloatingWindow(window: Window): void {
+        const width = config().floatingWindowWidth;
+        const height = config().floatingWindowHeight;
+        const handler = this.windowHandlers.get(window);
+        if (
+            width <= 0 ||
+            height <= 0 ||
+            window.move ||
+            window.resize ||
+            window.fullScreen ||
+            window.minimized ||
+            handler === undefined ||
+            handler.maximized
+        ) {
+            return;
+        }
+        const area = this.workspace.clientArea(
+            ClientAreaOption.MaximizeArea,
+            window,
+        );
+        const w = Math.min(width, area.width);
+        const h = Math.min(height, area.height);
+        window.frameGeometry = qt().rect(
+            area.x + Math.round((area.width - w) / 2),
+            area.y + Math.round((area.height - h) / 2),
+            w,
+            h,
+        );
+    }
+
+    rememberWindowSize(window: Window): void {
+        for (const display of Display.generateWindow(window)) {
+            this.drivers.get(display.toSymbol())?.rememberWindowSize(window);
+        }
+    }
+
+    // copied numbers: relativeGeometry is a live reference into kwin
+    snapshotTileSizes(tile: Tile): TileSizes {
+        let root = tile;
+        while (root.parent !== null) {
+            root = root.parent;
+        }
+        const sizes: TileSizes = new Map();
+        const stack = [root];
+        while (stack.length > 0) {
+            const t = stack.pop()!;
+            if (t.tiles.length === 0) {
+                const g = t.relativeGeometry;
+                sizes.set(t, [g.width, g.height]);
+            } else {
+                stack.push(...t.tiles);
+            }
+        }
+        return sizes;
+    }
+
+    // a resize moves a shared edge, so every window on it was resized
+    rememberResizedWindows(before: TileSizes): void {
+        for (const [tile, [width, height]] of before) {
+            const g = tile.relativeGeometry;
+            if (g.width === width && g.height === height) {
+                continue;
+            }
+            for (const window of tile.windows) {
+                this.rememberWindowSize(window);
+            }
+        }
+    }
+
     mouseFollowsFocus(): MouseFollowsFocusHandler | null {
         return this.mffHandler;
     }
@@ -675,6 +755,8 @@ class Controller {
         return false;
     }
 }
+
+export type TileSizes = Map<Tile, [number, number]>;
 
 let controllerObj: Controller;
 let consoleObj: Console;

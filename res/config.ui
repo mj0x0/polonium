@@ -772,6 +772,35 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="tileGapLabel">
+           <property name="text">
+            <string>Gap Between Tiles</string>
+           </property>
+           <property name="toolTip">
+            <string>Space between tiled windows, and between tiles and the screen edges.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="kcfg_TileGap">
+           <property name="toolTip">
+            <string>Space between tiled windows, and between tiles and the screen edges.</string>
+           </property>
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="1">
           <widget class="QComboBox" name="kcfg_Borders">
            <property name="minimumSize">
@@ -824,7 +853,24 @@
            </property>
           </widget>
          </item>
-          <item row="6" column="0" colspan="2">
+         <item row="6" column="0">
+          <widget class="QLabel" name="mouseFollowsFocusIgnoreEffectsLabel">
+           <property name="text">
+            <string>Pause During Effects</string>
+           </property>
+           <property name="toolTip">
+            <string>Comma-separated KWin effect ids. While one of them is running, Mouse Follows Focus neither warps nor re-activates windows. Example: betteroverview, overview, cube</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="kcfg_MouseFollowsFocusIgnoreEffects">
+           <property name="toolTip">
+            <string>Comma-separated KWin effect ids. While one of them is running, Mouse Follows Focus neither warps nor re-activates windows. Example: betteroverview, overview, cube</string>
+           </property>
+          </widget>
+         </item>
+          <item row="7" column="0" colspan="2">
            <widget class="QLabel" name="ultrawideTitle">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -840,7 +886,7 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="ultrawideEnableLabel">
             <property name="text">
              <string>Custom Sizing for Single Window</string>
@@ -850,7 +896,7 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <widget class="QCheckBox" name="kcfg_UltrawideSingleWindow">
             <property name="text">
              <string/>
@@ -860,7 +906,7 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="ultrawideOnlyLabel">
             <property name="text">
              <string>Only on Ultrawide Screens</string>
@@ -870,7 +916,7 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="9" column="1">
            <widget class="QCheckBox" name="kcfg_UltrawideOnly">
             <property name="text">
              <string/>
@@ -880,7 +926,7 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="10" column="0">
            <widget class="QLabel" name="ultrawideWidthLabel">
             <property name="text">
              <string>Single Window Width</string>
@@ -890,7 +936,7 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="10" column="1">
            <widget class="QDoubleSpinBox" name="kcfg_UltrawideSingleWindowWidth">
             <property name="toolTip">
              <string>Width of the single window as a fraction of the screen width (0.60 means 60%).</string>
@@ -909,7 +955,7 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="11" column="0">
            <widget class="QLabel" name="ultrawidePositionLabel">
             <property name="text">
              <string>Single Window Position</string>
@@ -919,7 +965,7 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
+          <item row="11" column="1">
            <widget class="QComboBox" name="kcfg_UltrawideSingleWindowPosition">
             <property name="toolTip">
              <string>Position of the single window when custom sizing is active (Center, Left, or Right).</string>
@@ -941,7 +987,81 @@
             </item>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
+          <item row="12" column="0" colspan="2">
+           <widget class="QLabel" name="floatingSizeTitle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Floating Window Size</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QLabel" name="floatingWindowWidthLabel">
+            <property name="text">
+             <string>Width</string>
+            </property>
+            <property name="toolTip">
+             <string>Size given to a window when you untile it, centred on its screen. Set either value to 0 to leave the size alone.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="1">
+           <widget class="QSpinBox" name="kcfg_FloatingWindowWidth">
+            <property name="toolTip">
+             <string>Size given to a window when you untile it, centred on its screen. Set either value to 0 to leave the size alone.</string>
+            </property>
+            <property name="suffix">
+             <string>px</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>7680</number>
+            </property>
+            <property name="value">
+             <number>1089</number>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="0">
+           <widget class="QLabel" name="floatingWindowHeightLabel">
+            <property name="text">
+             <string>Height</string>
+            </property>
+            <property name="toolTip">
+             <string>Size given to a window when you untile it, centred on its screen. Set either value to 0 to leave the size alone.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="1">
+           <widget class="QSpinBox" name="kcfg_FloatingWindowHeight">
+            <property name="toolTip">
+             <string>Size given to a window when you untile it, centred on its screen. Set either value to 0 to leave the size alone.</string>
+            </property>
+            <property name="suffix">
+             <string>px</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>7680</number>
+            </property>
+            <property name="value">
+             <number>467</number>
+            </property>
+           </widget>
+          </item>
+          <item row="15" column="0" colspan="2">
            <spacer name="windowsVerticalSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Vertical</enum>

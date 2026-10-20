@@ -4,6 +4,9 @@
     <group name="">
         <entry name="RebuildDelay" type="int"><default>10</default></entry>
         <entry name="TileResizeAmount" type="int"><default>10</default></entry>
+        <entry name="TileGap" type="int"><default>4</default></entry>
+        <entry name="FloatingWindowWidth" type="int"><default>1089</default></entry>
+        <entry name="FloatingWindowHeight" type="int"><default>467</default></entry>
         <entry name="UseDBusSaver" type="bool"><default>false</default></entry>
 
         <entry name="LogLevel" type="int"><default>1</default></entry>
@@ -48,6 +51,7 @@
         <entry name="TiledWindowsBelow" type="bool"><default>true</default></entry>
         <entry name="MouseFollowsFocus" type="bool"><default>false</default></entry>
         <entry name="MouseFollowsFocusDelay" type="int"><default>50</default></entry>
+        <entry name="MouseFollowsFocusIgnoreEffects" type="string"><default>betteroverview</default></entry>
         <entry name="WindowDragPolicy" type="int"><default>1</default></entry>
         <entry name="DragRetilePoint" type="int"><default>0</default></entry>
 
