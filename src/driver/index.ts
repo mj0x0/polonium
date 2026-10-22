@@ -158,7 +158,10 @@ export class Driver {
                 }
                 // fullscreen windows keep their slot in the tree but are left
                 // alone until they exit; managing them here would fight kwin
-                if (kwinWindow.fullScreen) {
+                if (
+                    kwinWindow.fullScreen ||
+                    ctrl().isWindowMaximized(kwinWindow)
+                ) {
                     kwinWindow.keepBelow = false;
                     tiledWindows.add(kwinWindow);
                     continue;

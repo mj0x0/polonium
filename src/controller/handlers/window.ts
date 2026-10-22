@@ -185,14 +185,20 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         this.maximized = state !== MaximizeMode.MaximizeRestore;
-        if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
-            this.untileRemembering();
-        } else if (
-            this.canBeTiled() &&
-            !ctrl().isWindowTiled(this.window) &&
-            this.wantsTiled
-        ) {
-            this.retileRemembered();
+        // maximized windows stay in the layout like fullscreen ones; the
+        // rebuild skips them and unmaximizing drops them back into their slot
+        if (!this.maximized) {
+            if (ctrl().isWindowTiled(this.window)) {
+                for (const display of Display.generateWindow(this.window)) {
+                    ctrl().queueEvent({
+                        t: "updateTiles",
+                        display: display,
+                        rebuild: true,
+                    });
+                }
+            } else if (this.canBeTiled() && this.wantsTiled) {
+                this.retileRemembered();
+            }
         }
     }
 

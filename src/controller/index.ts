@@ -316,7 +316,9 @@ class Controller {
             ret.push(display);
             driver.untileWindow(window);
         }
-        this.queuePostEvent({ t: "floatWindow", window: window });
+        // direct push: queuePostEvent drops events while processing, and
+        // untile events are always handled mid-pass
+        this.postEventQueue.push({ t: "floatWindow", window: window });
         return ret;
     }
     private evPlaceWindow(
@@ -740,6 +742,12 @@ class Controller {
 
     getEngineSettings(display: Display): object | undefined {
         return this.drivers.get(display.toSymbol())?.getEngineSettings();
+    }
+
+    // kwin exposes maximize state only through signals, so the handler's
+    // tracked flag is the single source of truth
+    isWindowMaximized(window: Window): boolean {
+        return this.windowHandlers.get(window)?.maximized ?? false;
     }
 
     isWindowTiled(window: Window, display?: Display): boolean | undefined {
